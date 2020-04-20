@@ -35,6 +35,7 @@ class GenericCanvas(QLabel):
         self._default_pen_width = kwargs.get("default_pen_width", self._default_pen_width)
         self._init_ui()
         self.clicks = []
+        self.outlines = []
 
     def _init_ui(self):
         pixmap = QPixmap(self._size, self._size)
@@ -71,31 +72,53 @@ class GenericCanvas(QLabel):
 
     def clear(self):
         self.pixmap().fill(Qt.white)
+        self.draw_outline([(0, 0), (1, 1)], color=QColor(255, 255, 255, 255))
 
-    def draw_outline(self, points):
-        with self.painting(color=QColor(255, 0, 0, 255)) as painter:
+    def draw_outline(self, points, color=None):
+        with self.painting(color=color or QColor(255, 0, 0, 255)) as painter:
             for start, end in with_neighbour(points, last_with_first=False):
                 painter.drawLine(start[0], start[1], end[0], end[1])
                 print(f"drawing line for {(start[0], start[1], end[0], end[1])}")
 
+    def draw_point(self, x, y, color=None, width=None):
+        with self.painting(color=color or QColor(255, 0, 0, 255), width=1 or width) as painter:
+            painter.drawPoint(x, y)
+
     def mousePressEvent(self, event):
+        skip = False
+        if skip:
+            return
         if event.buttons() == Qt.RightButton:
-            self.clicks = []
+            if self.clicks:
+                self.clicks = []
+            elif self.outlines:
+                del self.outlines[-1]
+            self.redraw()
+            return
         dots_limit = self._calc.power
-        if len(self.clicks) == dots_limit:
-            outline_dots = self._calc.get_dots(self.clicks)
-            self.draw_outline(outline_dots)
+        if len(self.clicks) > dots_limit:
+            self.outlines.append(self._calc.get_dots(self.clicks))
             self.clicks = []
+            self.redraw()
         else:
             dot = event.pos().x(), event.pos().y()
+            self.draw_point(dot[0], dot[1])
             if self.clicks:
                 last_dot = self.clicks[-1]
                 self.draw_outline([(last_dot[0], last_dot[1]), (dot[0], dot[1])])
+
             print(dot)
             self.clicks.append(dot)
 
     def redraw(self):
-        pass
+        self.clear()
+        for outline in self.outlines:
+            self.draw_outline(outline)
+
+    def mouseMoveEvent(self, event):
+        x, y = event.pos().x(), event.pos().y()
+        print(f"current mouse pos: {x, y}")
+
 # class MainWindow(QMainWindow):
 #     def __init__(self, *args, **kwargs):
 #         def f(*args):

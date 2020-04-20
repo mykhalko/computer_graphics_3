@@ -10,7 +10,7 @@ from model import Model
 
 def main():
     with App(sys.argv) as app:
-        calc = BezierCalculator(power=5, steps_count=20)
+        calc = BezierCalculator(power=2, steps_count=20)
         model = Model("objects.json")
         windows = GenericCanvas(default_pen_width=1, calc=calc)
         # for figure in model.figures:
