@@ -5,18 +5,6 @@ def ncr(n, r):
     return factorial(n) // (factorial(r) * factorial(n - r))
 
 
-def calculate_5pow(args, t=None):
-    rt = 1 - t
-    return sum((
-        ((rt**5) * args[0]),
-        (5 * t * (rt**4) * args[1]),
-        (10 * (t**2) * (rt**3) * args[2]),
-        (10 * (t**3) * (rt**2) * args[3]),
-        (5 * (t**4) * rt * args[4]),
-        ((t**5) * args[5])
-    ))
-
-
 def bezier_factory(power):
     def calculate(args, t):
         rt = 1 - t
